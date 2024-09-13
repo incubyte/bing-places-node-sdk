@@ -5,6 +5,8 @@ import {
   CreateBusinessesRequest,
   CreateBusinessesResponse,
   Identity,
+  UpdateBusinessesRequest,
+  UpdateBusinessesResponse,
 } from "../models";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
@@ -118,5 +120,35 @@ export class BingPlacesClient {
     business: BusinessListing
   ): Promise<CreateBusinessesResponse> {
     return this.createBusinesses([business]);
+  }
+
+  public async updateBusinesses(
+    businesses: BusinessListing[]
+  ): Promise<UpdateBusinessesResponse> {
+    if (
+      !Array.isArray(businesses) ||
+      businesses.length === 0 ||
+      businesses.length > 1000
+    ) {
+      throw new Error(
+        "Businesses array must contain between 1 and 1000 items."
+      );
+    }
+
+    const requestBody: UpdateBusinessesRequest = {
+      Businesses: businesses,
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+    };
+
+    try {
+      const response = await this.axiosInstance.post<UpdateBusinessesResponse>(
+        "/UpdateBusinesses",
+        requestBody
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to update businesses: ${error}`);
+    }
   }
 }

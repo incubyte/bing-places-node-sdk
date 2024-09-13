@@ -1,9 +1,13 @@
 import { BingPlacesClient } from "../core/bing-places-client";
 import { Constants } from "../core/constants";
-import { Identity } from "../models";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { BusinessListing, CreateBusinessesResponse } from "../models"; // Adjust the import based on your actual file structure
+import {
+  Identity,
+  BusinessListing,
+  CreateBusinessesResponse,
+  UpdateBusinessesResponse,
+} from "../models"; // Adjust the import based on your actual file structure
 
 jest.mock("axios");
 jest.mock("uuid", () => ({
@@ -367,6 +371,205 @@ describe("BingPlacesClient", () => {
         TrackingId: "mocked-uuid",
         Identity: identity,
       });
+    });
+  });
+
+  describe("update businesses", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    const businesses: BusinessListing[] = [
+      {
+        StoreId: "Store_1",
+        BusinessName: "New Business Name",
+        AddressLine1: "Address Line",
+        AddressLine2: "",
+        City: "City",
+        Country: "US",
+        ZipCode: "98012",
+        StateOrProvince: "WA",
+        PhoneNumber: "(323) 123-4567",
+        Categories: {
+          BusinessCategories: [
+            {
+              CategoryName: "Restaurants",
+              BPCategoryId: 700341,
+            },
+          ],
+          PrimaryCategory: {
+            CategoryName: "Restaurants",
+            BPCategoryId: 700341,
+          },
+        },
+      },
+      {
+        StoreId: "Store_2",
+        BusinessName: "New Business Name - 2",
+        AddressLine1: "Address Line",
+        AddressLine2: "",
+        City: "City",
+        Country: "US",
+        ZipCode: "12345",
+        StateOrProvince: "WA",
+        PhoneNumber: "(323) 123-4568",
+        Categories: {
+          BusinessCategories: [
+            {
+              CategoryName: "Restaurants",
+              BPCategoryId: 700341,
+            },
+          ],
+          PrimaryCategory: {
+            CategoryName: "Restaurants",
+            BPCategoryId: 700341,
+          },
+        },
+      },
+    ];
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance;
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("should update businesses successfully", async () => {
+      const response: UpdateBusinessesResponse = {
+        UpdatedBusinesses: {
+          "0": {
+            StoreId: "Store_1",
+            Operation: "BUSINESS_UPDATE",
+            Status: "SUCCESSFUL",
+            ErrorMessage: "",
+          },
+          "1": {
+            StoreId: "Store_2",
+            Operation: "BUSINESS_UPDATE",
+            Status: "SUCCESSFUL",
+            ErrorMessage: "",
+            WarningMessages: null,
+          },
+        },
+        Errors: {},
+        TrackingId: "mocked-uuid",
+        OperationStatus: true,
+        ErrorMessage: null,
+        ErrorCode: 0,
+      };
+
+      axiosInstance.post.mockResolvedValueOnce({ data: response });
+
+      const result = await client.updateBusinesses(businesses);
+
+      expect(result).toEqual(response);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBusinesses", {
+        Businesses: businesses,
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+      });
+    });
+
+    test("should handle update failure due to non-existent store ID", async () => {
+      const response: UpdateBusinessesResponse = {
+        UpdatedBusinesses: {
+          "0": {
+            StoreId: "Store_60",
+            Operation: "BUSINESS_UPDATE",
+            Status: "FAILED",
+            ErrorMessage:
+              "Update business failed since the store ID Store_60 does not exist in your account. Provide the correct store ID and retry to update the business or use CreateBusiness API to add the business.",
+            WarningMessages: null,
+          },
+        },
+        Errors: {},
+        TrackingId: "mocked-uuid",
+        OperationStatus: true,
+        ErrorMessage: null,
+        ErrorCode: 0,
+      };
+
+      axiosInstance.post.mockResolvedValueOnce({ data: response });
+
+      const result = await client.updateBusinesses([
+        {
+          StoreId: "Store_60",
+          BusinessName: "Non-existent Business",
+          AddressLine1: "Address Line",
+          AddressLine2: "",
+          City: "City",
+          Country: "US",
+          ZipCode: "98012",
+          StateOrProvince: "WA",
+          PhoneNumber: "(323) 123-4567",
+          Categories: {
+            BusinessCategories: [
+              {
+                CategoryName: "Restaurants",
+                BPCategoryId: 700341,
+              },
+            ],
+            PrimaryCategory: {
+              CategoryName: "Restaurants",
+              BPCategoryId: 700341,
+            },
+          },
+        },
+      ]);
+
+      expect(result).toEqual(response);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBusinesses", {
+        Businesses: [
+          {
+            StoreId: "Store_60",
+            BusinessName: "Non-existent Business",
+            AddressLine1: "Address Line",
+            AddressLine2: "",
+            City: "City",
+            Country: "US",
+            ZipCode: "98012",
+            StateOrProvince: "WA",
+            PhoneNumber: "(323) 123-4567",
+            Categories: {
+              BusinessCategories: [
+                {
+                  CategoryName: "Restaurants",
+                  BPCategoryId: 700341,
+                },
+              ],
+              PrimaryCategory: {
+                CategoryName: "Restaurants",
+                BPCategoryId: 700341,
+              },
+            },
+          },
+        ],
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+      });
+    });
+
+    test("should throw error for invalid number of businesses", async () => {
+      await expect(client.updateBusinesses([])).rejects.toThrow(
+        "Businesses array must contain between 1 and 1000 items."
+      );
+
+      const tooManyBusinesses = new Array(1001).fill(businesses[0]);
+      await expect(client.updateBusinesses(tooManyBusinesses)).rejects.toThrow(
+        "Businesses array must contain between 1 and 1000 items."
+      );
     });
   });
 });

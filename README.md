@@ -6,7 +6,7 @@ A clean, re-usable Node (TypeScript) SDK for Bing Places API. You can think of t
 
 1. Create businesses
 2. Create 1 business
-3. Update businesses (TODO)
+3. Update businesses
 4. Fetch added businesses (TODO)
 5. Get Analytics of businesses (TODO)
 6. Delete businesses (TODO)

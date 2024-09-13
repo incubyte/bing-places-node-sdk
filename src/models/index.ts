@@ -8,3 +8,5 @@ export { CreateBusinessesRequest } from "./create-business-request";
 export { CreateBusinessesResponse } from "./create-business-response";
 export { ValidationError } from "./validation-error";
 export { CreatedBusinessStatus } from "./created-business-status";
+export { UpdateBusinessesRequest } from "./update-businesses-request";
+export { UpdateBusinessesResponse } from "./update-businesses-response";
