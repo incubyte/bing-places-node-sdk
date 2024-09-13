@@ -1,6 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { Identity } from "../models";
+import {
+  BusinessListing,
+  CreateBusinessesRequest,
+  CreateBusinessesResponse,
+  Identity,
+} from "../models";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
 
@@ -24,18 +29,22 @@ export class BingPlacesClient {
       !options.identity.AuthProvider
     ) {
       throw new Error(
-        "BigPlacesClient: Identity is required. Please provide a valid Identity object."
+        "BingPlacesClient: Identity is required. Please provide a valid Identity object."
       );
     }
 
     if (!Utils.isEmailValid(options.identity.EmailId)) {
-      throw new Error("BigPlacesClient: EmailId is not a valid email address.");
+      throw new Error(
+        "BingPlacesClient: EmailId is not a valid email address."
+      );
     }
 
     const { identity, useSandbox } = options;
 
     if (useSandbox !== undefined && typeof useSandbox !== "boolean") {
-      console.warn("BigPlacesClient: useSandbox not set. Defaulting to false.");
+      console.warn(
+        "BingPlacesClient: useSandbox not set. Defaulting to false."
+      );
     }
 
     this.useSandbox = useSandbox || false;
@@ -81,5 +90,33 @@ export class BingPlacesClient {
   shiftToProduction(): void {
     this.useSandbox = false;
     this.axiosInstance.defaults.baseURL = Constants.Endpoints.Production;
+  }
+
+  public async createBusinesses(
+    businesses: BusinessListing[]
+  ): Promise<CreateBusinessesResponse> {
+    // TODO: 1. add validations for businesses array
+    // TODO: 2. add a way to track the request and response in a persistent way or through log storage like CloudWatch
+    const requestBody: CreateBusinessesRequest = {
+      Businesses: businesses,
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+    };
+
+    try {
+      const response = await this.axiosInstance.post<CreateBusinessesResponse>(
+        "/CreateBusinesses",
+        requestBody
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to create businesses: ${error}`);
+    }
+  }
+
+  public async createSingleBusiness(
+    business: BusinessListing
+  ): Promise<CreateBusinessesResponse> {
+    return this.createBusinesses([business]);
   }
 }

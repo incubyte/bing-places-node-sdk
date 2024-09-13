@@ -4,3 +4,7 @@ export { ChainInformation } from "./chain-information";
 export { HolidayHoursTimePeriod } from "./holiday-hours-time-period";
 export { BusinessListing } from "./business-listing";
 export { Identity } from "./identity";
+export { CreateBusinessesRequest } from "./create-business-request";
+export { CreateBusinessesResponse } from "./create-business-response";
+export { ValidationError } from "./validation-error";
+export { CreatedBusinessStatus } from "./created-business-status";
