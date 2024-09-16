@@ -7,6 +7,8 @@ import {
   BusinessListing,
   CreateBusinessesResponse,
   UpdateBusinessesResponse,
+  FetchBusinessesResponse,
+  SearchCriteria,
 } from "../models"; // Adjust the import based on your actual file structure
 
 jest.mock("axios");
@@ -570,6 +572,209 @@ describe("BingPlacesClient", () => {
       await expect(client.updateBusinesses(tooManyBusinesses)).rejects.toThrow(
         "Businesses array must contain between 1 and 1000 items."
       );
+    });
+  });
+
+  describe("fetch businesses", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance; // Ensure axiosInstance is properly initialized
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    describe("fetchBusinesses", () => {
+      const businessesResponse: FetchBusinessesResponse = {
+        Businesses: [
+          {
+            StoreId: "Store_1",
+            BusinessName: "New Business Name",
+            AddressLine1: "Address Line",
+            AddressLine2: "",
+            City: "City",
+            Country: "US",
+            ZipCode: "98012",
+            StateOrProvince: "WA",
+            PhoneNumber: "(323) 123-4567",
+            Categories: {
+              BusinessCategories: [
+                {
+                  CategoryName: "Restaurants",
+                  BPCategoryId: 700341,
+                },
+              ],
+              PrimaryCategory: {
+                CategoryName: "",
+                BPCategoryId: 0,
+              },
+            },
+            Latitude: "0",
+            Longitude: "0",
+            BusinessEmail: "",
+            MainWebSite: "",
+            FacebookAddress: "",
+            TwitterAddress: "",
+            Photos: [],
+            MenuURL: "",
+            OrderURL: undefined,
+            RestaurantPrice: undefined,
+            HotelStarRating: undefined,
+            Amenities: [],
+            Open24Hours: false,
+            OperatingHours: [""],
+            HolidayHours: undefined,
+            HideAddress: false,
+            IsClosed: false,
+            Npi: undefined,
+            Offers: null,
+          },
+          {
+            StoreId: "Store_2",
+            BusinessName: "New Business Name - 2",
+            AddressLine1: "Address Line",
+            AddressLine2: "",
+            City: "City",
+            Country: "US",
+            ZipCode: "12345",
+            StateOrProvince: "WA",
+            PhoneNumber: "(323) 123-4568",
+            Categories: {
+              BusinessCategories: [
+                {
+                  CategoryName: "Restaurants",
+                  BPCategoryId: 700341,
+                },
+              ],
+              PrimaryCategory: {
+                CategoryName: "",
+                BPCategoryId: 0,
+              },
+            },
+            Latitude: "0",
+            Longitude: "0",
+            BusinessEmail: "",
+            MainWebSite: "",
+            FacebookAddress: "",
+            TwitterAddress: "",
+            Photos: [],
+            MenuURL: "",
+            OrderURL: "",
+            RestaurantPrice: undefined,
+            HotelStarRating: undefined,
+            Amenities: [],
+            Open24Hours: false,
+            OperatingHours: [""],
+            HolidayHours: undefined,
+            HideAddress: false,
+            IsClosed: false,
+            Npi: undefined,
+            Offers: null,
+          },
+        ],
+        Errors: {},
+        TrackingId: "mocked-uuid",
+        OperationStatus: true,
+        ErrorMessage: null,
+        ErrorCode: 0,
+      };
+
+      test("should fetch businesses page-wise", async () => {
+        axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+
+        const searchCriteria: SearchCriteria = {
+          CriteriaType: "GetInBatches",
+        };
+
+        const result = await client.fetchBusinesses(1, 100, searchCriteria);
+
+        expect(result).toEqual(businessesResponse);
+        expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+          PageNumber: 1,
+          PageSize: 100,
+          SearchCriteria: searchCriteria,
+        });
+      });
+
+      test("should fetch businesses by store IDs", async () => {
+        axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+
+        const searchCriteria: SearchCriteria = {
+          CriteriaType: "SearchByStoreIds",
+          StoreIds: ["Store_1", "Store_2"],
+        };
+
+        const result = await client.fetchBusinesses(1, 100, searchCriteria);
+
+        expect(result).toEqual(businessesResponse);
+        expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+          PageNumber: 1,
+          PageSize: 100,
+          SearchCriteria: searchCriteria,
+        });
+      });
+
+      test("should fetch businesses by business name", async () => {
+        axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+
+        const searchCriteria: SearchCriteria = {
+          CriteriaType: "SearchByQuery",
+          BusinessName: "Contoso rentals",
+        };
+
+        const result = await client.fetchBusinesses(1, 100, searchCriteria);
+
+        expect(result).toEqual(businessesResponse);
+        expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+          PageNumber: 1,
+          PageSize: 100,
+          SearchCriteria: searchCriteria,
+        });
+      });
+
+      test("should throw error for invalid page number", async () => {
+        const searchCriteria: SearchCriteria = {
+          CriteriaType: "GetInBatches",
+        };
+
+        await expect(
+          client.fetchBusinesses(0, 100, searchCriteria)
+        ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
+      });
+
+      test("should throw error for invalid page size", async () => {
+        const searchCriteria: SearchCriteria = {
+          CriteriaType: "GetInBatches",
+        };
+
+        await expect(
+          client.fetchBusinesses(1, 0, searchCriteria)
+        ).rejects.toThrow("PageSize must be between 1 and 1000.");
+
+        await expect(
+          client.fetchBusinesses(1, 1001, searchCriteria)
+        ).rejects.toThrow("PageSize must be between 1 and 1000.");
+      });
     });
   });
 });

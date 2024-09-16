@@ -10,3 +10,6 @@ export { ValidationError } from "./validation-error";
 export { CreatedBusinessStatus } from "./created-business-status";
 export { UpdateBusinessesRequest } from "./update-businesses-request";
 export { UpdateBusinessesResponse } from "./update-businesses-response";
+export { FetchBusinessesRequest } from "./fetch-businesses-request";
+export { FetchBusinessesResponse } from "./fetch-businesses-response";
+export { SearchCriteria, SearchCriteriaType } from "./search-criteria";
