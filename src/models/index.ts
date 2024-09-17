@@ -13,3 +13,7 @@ export { UpdateBusinessesResponse } from "./update-businesses-response";
 export { FetchBusinessesRequest } from "./fetch-businesses-request";
 export { FetchBusinessesResponse } from "./fetch-businesses-response";
 export { SearchCriteria, SearchCriteriaType } from "./search-criteria";
+export { FetchBusinessStatusInfoRequest } from "./fetch-business-status-request";
+export { FetchBusinessStatusInfoResponse } from "./fetch-business-status-response";
+export { BusinessStatusInfo } from "./business-status-info";
+export { QualityIssue } from "./quality-issue";

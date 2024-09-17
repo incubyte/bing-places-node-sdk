@@ -9,6 +9,7 @@ import {
   UpdateBusinessesResponse,
   FetchBusinessesResponse,
   SearchCriteria,
+  FetchBusinessStatusInfoResponse,
 } from "../models"; // Adjust the import based on your actual file structure
 
 jest.mock("axios");
@@ -775,6 +776,218 @@ describe("BingPlacesClient", () => {
           client.fetchBusinesses(1, 1001, searchCriteria)
         ).rejects.toThrow("PageSize must be between 1 and 1000.");
       });
+    });
+  });
+
+  describe("update businesses", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    const businessStatusInfoResponse1: FetchBusinessStatusInfoResponse = {
+      BusinessesStatusInfo: [
+        {
+          StoreId: "Store_1",
+          QualityIssues: [],
+          YPId: null,
+          YPIdAssignDate: "0001-01-01T00:00:00",
+          PublishDate: "0001-01-01T00:00:00",
+          HasPendingPublish: false,
+          LastUpdateDate: "0001-01-01T00:00:00",
+          BusinessStatus: "QualityCheckInProgress",
+          PublishLink: null,
+        },
+        {
+          StoreId: "Store_2",
+          QualityIssues: [],
+          YPId: null,
+          YPIdAssignDate: "0001-01-01T00:00:00",
+          PublishDate: "0001-01-01T00:00:00",
+          HasPendingPublish: false,
+          LastUpdateDate: "0001-01-01T00:00:00",
+          BusinessStatus: "QualityCheckInProgress",
+          PublishLink: null,
+        },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    const businessStatusInfoResponse2: FetchBusinessStatusInfoResponse = {
+      BusinessesStatusInfo: [
+        {
+          StoreId: "Store_1",
+          QualityIssues: [],
+          YPId: "some ypid",
+          YPIdAssignDate: "2016-03-06T09:31:46.617",
+          PublishDate: "2016-03-06T09:31:46.617",
+          HasPendingPublish: false,
+          LastUpdateDate: "2016-03-05T17:16:52.767",
+          BusinessStatus: "Published",
+          PublishLink:
+            "http://www.bing.com/mapspreview?ss=ypid.YN873x14884659662320771585&mkt=en-US",
+        },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    const businessStatusInfoResponse3: FetchBusinessStatusInfoResponse = {
+      BusinessesStatusInfo: [
+        {
+          StoreId: "Store_1",
+          QualityIssues: [
+            {
+              IssueType: "StaleBusinessData",
+              SubIssueType: null,
+            },
+            {
+              IssueType: "AddressGeocodeError",
+              SubIssueType: null,
+            },
+            {
+              IssueType: "ContentValidationError",
+              SubIssueType: ["Description", "Business name"],
+            },
+          ],
+          YPId: null,
+          YPIdAssignDate: "0001-01-01T00:00:00",
+          PublishDate: "0001-01-01T00:00:00",
+          HasPendingPublish: false,
+          LastUpdateDate: "0001-01-01T00:00:00",
+          BusinessStatus: "QualityIssueFound",
+          PublishLink: null,
+        },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance;
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("should fetch business status info page-wise", async () => {
+      axiosInstance.post.mockResolvedValueOnce({
+        data: businessStatusInfoResponse1,
+      });
+
+      const criteriaType = "GetInBatches";
+
+      const result = await client.fetchBusinessStatusInfo(1, 100, criteriaType);
+
+      expect(result).toEqual(businessStatusInfoResponse1);
+      expect(axiosInstance.post).toHaveBeenCalledWith(
+        "/GetBusinessStatusInfo",
+        {
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+          PageNumber: 1,
+          PageSize: 100,
+          CriteriaType: criteriaType,
+        }
+      );
+    });
+
+    test("should fetch business status info by store IDs", async () => {
+      axiosInstance.post.mockResolvedValueOnce({
+        data: businessStatusInfoResponse2,
+      });
+
+      const criteriaType = "SearchByStoreIds";
+      const storeIds = ["Store_1", "Store_2"];
+
+      const result = await client.fetchBusinessStatusInfo(
+        1,
+        100,
+        criteriaType,
+        storeIds
+      );
+
+      expect(result).toEqual(businessStatusInfoResponse2);
+      expect(axiosInstance.post).toHaveBeenCalledWith(
+        "/GetBusinessStatusInfo",
+        {
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+          PageNumber: 1,
+          PageSize: 100,
+          CriteriaType: criteriaType,
+          StoreIds: storeIds,
+        }
+      );
+    });
+
+    test("should fetch business status info with quality issues", async () => {
+      axiosInstance.post.mockResolvedValueOnce({
+        data: businessStatusInfoResponse3,
+      });
+
+      const criteriaType = "SearchByStoreIds";
+      const storeIds = ["Store_1"];
+
+      const result = await client.fetchBusinessStatusInfo(
+        1,
+        100,
+        criteriaType,
+        storeIds
+      );
+
+      expect(result).toEqual(businessStatusInfoResponse3);
+      expect(axiosInstance.post).toHaveBeenCalledWith(
+        "/GetBusinessStatusInfo",
+        {
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+          PageNumber: 1,
+          PageSize: 100,
+          CriteriaType: criteriaType,
+          StoreIds: storeIds,
+        }
+      );
+    });
+
+    test("should throw error for invalid page number", async () => {
+      const criteriaType = "GetInBatches";
+
+      await expect(
+        client.fetchBusinessStatusInfo(0, 100, criteriaType)
+      ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
+    });
+
+    test("should throw error for invalid page size", async () => {
+      const criteriaType = "GetInBatches";
+
+      await expect(
+        client.fetchBusinessStatusInfo(1, 0, criteriaType)
+      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+
+      await expect(
+        client.fetchBusinessStatusInfo(1, 1001, criteriaType)
+      ).rejects.toThrow("PageSize must be between 1 and 1000.");
     });
   });
 });

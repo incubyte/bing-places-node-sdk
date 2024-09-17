@@ -6,6 +6,8 @@ import {
   CreateBusinessesResponse,
   FetchBusinessesRequest,
   FetchBusinessesResponse,
+  FetchBusinessStatusInfoRequest,
+  FetchBusinessStatusInfoResponse,
   Identity,
   UpdateBusinessesRequest,
   UpdateBusinessesResponse,
@@ -182,6 +184,40 @@ export class BingPlacesClient {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to fetch businesses: ${error}`);
+    }
+  }
+
+  public async fetchBusinessStatusInfo(
+    pageNumber: number,
+    pageSize: number,
+    criteriaType: "GetInBatches" | "SearchByStoreIds",
+    storeIds?: string[]
+  ): Promise<FetchBusinessStatusInfoResponse> {
+    if (pageNumber < 1) {
+      throw new Error("PageNumber must be greater than or equal to 1.");
+    }
+    if (pageSize < 1 || pageSize > 1000) {
+      throw new Error("PageSize must be between 1 and 1000.");
+    }
+
+    const requestBody: FetchBusinessStatusInfoRequest = {
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+      CriteriaType: criteriaType,
+      StoreIds: storeIds,
+    };
+
+    try {
+      const response =
+        await this.axiosInstance.post<FetchBusinessStatusInfoResponse>(
+          "/GetBusinessStatusInfo",
+          requestBody
+        );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch business status info: ${error}`);
     }
   }
 }
