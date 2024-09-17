@@ -109,9 +109,11 @@ export class BingPlacesClient {
     this.axiosInstance.defaults.baseURL = Constants.Endpoints.Production;
   }
 
-  public async createBusinesses(
-    businesses: BusinessListing[]
-  ): Promise<CreateBusinessesResponse> {
+  public async createBusinesses({
+    businesses,
+  }: {
+    businesses: BusinessListing[];
+  }): Promise<{ response: CreateBusinessesResponse; status: number }> {
     // TODO: 1. add validations for businesses array
     // TODO: 2. add a way to track the request and response in a persistent way or through log storage like CloudWatch
     const requestBody: CreateBusinessesRequest = {
@@ -125,16 +127,35 @@ export class BingPlacesClient {
         "/CreateBusinesses",
         requestBody
       );
-      return response.data;
+
+      return {
+        response: response.data,
+        status: response.status,
+      };
     } catch (error) {
-      throw new Error(`Failed to create businesses: ${error}`);
+      if (this.verbose) {
+        console.error(
+          "BigPlaces.createBusinesses: Failed to create businesses. ",
+          error
+        );
+      }
+
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to create businesses: ${
+            error.response?.data?.ErrorMessage || error.message
+          }`
+        );
+      } else {
+        throw new Error(`Failed to create businesses`);
+      }
     }
   }
 
   public async createSingleBusiness(
     business: BusinessListing
-  ): Promise<CreateBusinessesResponse> {
-    return this.createBusinesses([business]);
+  ): Promise<{ response: CreateBusinessesResponse; status: number }> {
+    return this.createBusinesses({ businesses: [business] });
   }
 
   public async updateBusinesses(

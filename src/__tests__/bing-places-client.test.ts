@@ -218,9 +218,9 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.createBusinesses([business]);
+      const result = await client.createBusinesses({ businesses: [business] });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
         Businesses: [business],
         TrackingId: "mocked-uuid",
@@ -250,9 +250,9 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.createBusinesses([business]);
+      const result = await client.createBusinesses({ businesses: [business] });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
         Businesses: [business],
         TrackingId: "mocked-uuid",
@@ -280,9 +280,9 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.createBusinesses([business]);
+      const result = await client.createBusinesses({ businesses: [business] });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
         Businesses: [business],
         TrackingId: "mocked-uuid",
@@ -316,9 +316,9 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.createBusinesses([business]);
+      const result = await client.createBusinesses({ businesses: [business] });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
         Businesses: [business],
         TrackingId: "mocked-uuid",
@@ -339,9 +339,9 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.createBusinesses([]);
+      const result = await client.createBusinesses({ businesses: [] });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
         Businesses: [],
         TrackingId: "mocked-uuid",
@@ -370,7 +370,7 @@ describe("BingPlacesClient", () => {
 
       const result = await client.createSingleBusiness(business);
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
         Businesses: [business],
         TrackingId: "mocked-uuid",
