@@ -10,6 +10,7 @@ import {
   FetchBusinessesResponse,
   GetAnalyticsResponse,
   DeleteBusinessesResponse,
+  CreateBulkChainResponse,
 } from "../models/api";
 
 jest.mock("axios");
@@ -1222,6 +1223,113 @@ describe("BingPlacesClient", () => {
       await expect(client.deleteBusinesses([])).rejects.toThrow(
         "StoreIds must not be empty."
       );
+    });
+  });
+
+  describe("create bulk chain", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance;
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    describe("createChain", () => {
+      const chainInfo = {
+        ChainName: "chain name",
+        Website: "www.contoso.com",
+        Locations: 100,
+        ClientContactName: "contactName",
+        ClientCorporateEmail: "sample@contoso.com",
+      };
+
+      const successfulResponse: CreateBulkChainResponse = {
+        Operation: "CHAIN_ADD",
+        ErrorMessage: "",
+        TrackingId: "mocked-uuid",
+        OperationStatus: true,
+        ErrorCode: 0,
+      };
+
+      const failedResponse: CreateBulkChainResponse = {
+        Operation: "CHAIN_ADD",
+        ErrorMessage: "CreateBulkChain failed since chain name already exists",
+        TrackingId: "mocked-uuid",
+        OperationStatus: false,
+        ErrorCode: 0,
+      };
+
+      const invalidRequestResponse = {
+        Message: "The request is invalid.",
+        ModelState: {
+          "request.ChainInfo.Website": ["You can't leave Website empty."],
+        },
+      };
+
+      test("should create chain successfully", async () => {
+        axiosInstance.post.mockResolvedValueOnce({ data: successfulResponse });
+
+        const result = await client.createChain(chainInfo);
+
+        expect(result).toEqual(successfulResponse);
+        expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBulkChain", {
+          ChainInfo: chainInfo,
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+        });
+      });
+
+      test("should handle failed creation due to existing chain name", async () => {
+        axiosInstance.post.mockResolvedValueOnce({ data: failedResponse });
+
+        const result = await client.createChain(chainInfo);
+
+        expect(result).toEqual(failedResponse);
+        expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBulkChain", {
+          ChainInfo: chainInfo,
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+        });
+      });
+
+      test("should handle invalid request due to missing website", async () => {
+        axiosInstance.post.mockRejectedValueOnce({
+          response: { data: invalidRequestResponse, status: 400 },
+        });
+
+        const invalidChainInfo = { ...chainInfo, Website: "" };
+
+        await expect(client.createChain(invalidChainInfo)).rejects.toThrow();
+
+        expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBulkChain", {
+          ChainInfo: invalidChainInfo,
+          TrackingId: "mocked-uuid",
+          Identity: identity,
+        });
+      });
+
+      test("should throw error for less than 10 locations", async () => {
+        const invalidChainInfo = { ...chainInfo, Locations: 5 };
+
+        await expect(client.createChain(invalidChainInfo)).rejects.toThrow(
+          "Chain must have at least 10 locations."
+        );
+      });
     });
   });
 });

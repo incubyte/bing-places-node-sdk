@@ -12,3 +12,4 @@ export { QualityIssue } from "./quality-issue";
 export { BusinessStatistics } from "./business-statistics";
 export { BusinessAnalytics } from "./business-analytics";
 export { DeleteBusinessStatus } from "./delete-business-status";
+export { ChainInfo } from "./chain-info";

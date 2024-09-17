@@ -10,3 +10,5 @@ export { GetAnalyticsRequest } from "./get-analytics-request";
 export { GetAnalyticsResponse } from "./get-analytics-response";
 export { DeleteBusinessesRequest } from "./delete-businesses-request";
 export { DeleteBusinessesResponse } from "./delete-businesses-response";
+export { CreateBulkChainRequest } from "./create-bulk-chain-request";
+export { CreateBulkChainResponse } from "./create-bulk-chain-response";

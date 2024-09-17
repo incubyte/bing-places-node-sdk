@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { BusinessListing, Identity } from "../models/common";
+import { BusinessListing, ChainInfo, Identity } from "../models/common";
 import {
   UpdateBusinessesRequest,
   UpdateBusinessesResponse,
@@ -14,6 +14,8 @@ import {
   GetAnalyticsResponse,
   DeleteBusinessesRequest,
   DeleteBusinessesResponse,
+  CreateBulkChainRequest,
+  CreateBulkChainResponse,
 } from "../models/api";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
@@ -278,6 +280,31 @@ export class BingPlacesClient {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to delete businesses: ${error}`);
+    }
+  }
+
+  public async createChain(
+    chainInfo: ChainInfo
+  ): Promise<CreateBulkChainResponse> {
+    if (chainInfo.Locations < 10) {
+      throw new Error("Chain must have at least 10 locations.");
+    }
+
+    const requestBody: CreateBulkChainRequest = {
+      ChainInfo: chainInfo,
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+    };
+
+    try {
+      const response = await this.axiosInstance.post<CreateBulkChainResponse>(
+        "/CreateBulkChain",
+        requestBody
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to create chain: ", error);
+      throw new Error(`Failed to create chain`);
     }
   }
 }
