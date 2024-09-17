@@ -10,6 +10,8 @@ import {
   FetchBusinessesResponse,
   FetchBusinessStatusInfoRequest,
   FetchBusinessStatusInfoResponse,
+  GetAnalyticsRequest,
+  GetAnalyticsResponse,
 } from "../models/api";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
@@ -217,6 +219,39 @@ export class BingPlacesClient {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to fetch business status info: ${error}`);
+    }
+  }
+
+  public async getAnalyticsForBusiness(
+    pageNumber: number,
+    pageSize: number,
+    criteriaType: "GetInBatches" | "SearchByStoreIds",
+    storeIds?: string[]
+  ): Promise<GetAnalyticsResponse> {
+    if (pageNumber < 1) {
+      throw new Error("PageNumber must be greater than or equal to 1.");
+    }
+    if (pageSize < 1 || pageSize > 1000) {
+      throw new Error("PageSize must be between 1 and 1000.");
+    }
+
+    const requestBody: GetAnalyticsRequest = {
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+      CriteriaType: criteriaType,
+      StoreIds: storeIds,
+    };
+
+    try {
+      const response = await this.axiosInstance.post<GetAnalyticsResponse>(
+        "/GetAnalytics",
+        requestBody
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch business analytics: ${error}`);
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   UpdateBusinessesResponse,
   FetchBusinessStatusInfoResponse,
   FetchBusinessesResponse,
+  GetAnalyticsResponse,
 } from "../models/api";
 
 jest.mock("axios");
@@ -597,187 +598,185 @@ describe("BingPlacesClient", () => {
       jest.clearAllMocks();
     });
 
-    describe("fetchBusinesses", () => {
-      const businessesResponse: FetchBusinessesResponse = {
-        Businesses: [
-          {
-            StoreId: "Store_1",
-            BusinessName: "New Business Name",
-            AddressLine1: "Address Line",
-            AddressLine2: "",
-            City: "City",
-            Country: "US",
-            ZipCode: "98012",
-            StateOrProvince: "WA",
-            PhoneNumber: "(323) 123-4567",
-            Categories: {
-              BusinessCategories: [
-                {
-                  CategoryName: "Restaurants",
-                  BPCategoryId: 700341,
-                },
-              ],
-              PrimaryCategory: {
-                CategoryName: "",
-                BPCategoryId: 0,
+    const businessesResponse: FetchBusinessesResponse = {
+      Businesses: [
+        {
+          StoreId: "Store_1",
+          BusinessName: "New Business Name",
+          AddressLine1: "Address Line",
+          AddressLine2: "",
+          City: "City",
+          Country: "US",
+          ZipCode: "98012",
+          StateOrProvince: "WA",
+          PhoneNumber: "(323) 123-4567",
+          Categories: {
+            BusinessCategories: [
+              {
+                CategoryName: "Restaurants",
+                BPCategoryId: 700341,
               },
+            ],
+            PrimaryCategory: {
+              CategoryName: "",
+              BPCategoryId: 0,
             },
-            Latitude: "0",
-            Longitude: "0",
-            BusinessEmail: "",
-            MainWebSite: "",
-            FacebookAddress: "",
-            TwitterAddress: "",
-            Photos: [],
-            MenuURL: "",
-            OrderURL: undefined,
-            RestaurantPrice: undefined,
-            HotelStarRating: undefined,
-            Amenities: [],
-            Open24Hours: false,
-            OperatingHours: [""],
-            HolidayHours: undefined,
-            HideAddress: false,
-            IsClosed: false,
-            Npi: undefined,
-            Offers: null,
           },
-          {
-            StoreId: "Store_2",
-            BusinessName: "New Business Name - 2",
-            AddressLine1: "Address Line",
-            AddressLine2: "",
-            City: "City",
-            Country: "US",
-            ZipCode: "12345",
-            StateOrProvince: "WA",
-            PhoneNumber: "(323) 123-4568",
-            Categories: {
-              BusinessCategories: [
-                {
-                  CategoryName: "Restaurants",
-                  BPCategoryId: 700341,
-                },
-              ],
-              PrimaryCategory: {
-                CategoryName: "",
-                BPCategoryId: 0,
+          Latitude: "0",
+          Longitude: "0",
+          BusinessEmail: "",
+          MainWebSite: "",
+          FacebookAddress: "",
+          TwitterAddress: "",
+          Photos: [],
+          MenuURL: "",
+          OrderURL: undefined,
+          RestaurantPrice: undefined,
+          HotelStarRating: undefined,
+          Amenities: [],
+          Open24Hours: false,
+          OperatingHours: [""],
+          HolidayHours: undefined,
+          HideAddress: false,
+          IsClosed: false,
+          Npi: undefined,
+          Offers: null,
+        },
+        {
+          StoreId: "Store_2",
+          BusinessName: "New Business Name - 2",
+          AddressLine1: "Address Line",
+          AddressLine2: "",
+          City: "City",
+          Country: "US",
+          ZipCode: "12345",
+          StateOrProvince: "WA",
+          PhoneNumber: "(323) 123-4568",
+          Categories: {
+            BusinessCategories: [
+              {
+                CategoryName: "Restaurants",
+                BPCategoryId: 700341,
               },
+            ],
+            PrimaryCategory: {
+              CategoryName: "",
+              BPCategoryId: 0,
             },
-            Latitude: "0",
-            Longitude: "0",
-            BusinessEmail: "",
-            MainWebSite: "",
-            FacebookAddress: "",
-            TwitterAddress: "",
-            Photos: [],
-            MenuURL: "",
-            OrderURL: "",
-            RestaurantPrice: undefined,
-            HotelStarRating: undefined,
-            Amenities: [],
-            Open24Hours: false,
-            OperatingHours: [""],
-            HolidayHours: undefined,
-            HideAddress: false,
-            IsClosed: false,
-            Npi: undefined,
-            Offers: null,
           },
-        ],
-        Errors: {},
-        TrackingId: "mocked-uuid",
-        OperationStatus: true,
-        ErrorMessage: null,
-        ErrorCode: 0,
+          Latitude: "0",
+          Longitude: "0",
+          BusinessEmail: "",
+          MainWebSite: "",
+          FacebookAddress: "",
+          TwitterAddress: "",
+          Photos: [],
+          MenuURL: "",
+          OrderURL: "",
+          RestaurantPrice: undefined,
+          HotelStarRating: undefined,
+          Amenities: [],
+          Open24Hours: false,
+          OperatingHours: [""],
+          HolidayHours: undefined,
+          HideAddress: false,
+          IsClosed: false,
+          Npi: undefined,
+          Offers: null,
+        },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    test("should fetch businesses page-wise", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+
+      const searchCriteria: SearchCriteria = {
+        CriteriaType: "GetInBatches",
       };
 
-      test("should fetch businesses page-wise", async () => {
-        axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+      const result = await client.fetchBusinesses(1, 100, searchCriteria);
 
-        const searchCriteria: SearchCriteria = {
-          CriteriaType: "GetInBatches",
-        };
-
-        const result = await client.fetchBusinesses(1, 100, searchCriteria);
-
-        expect(result).toEqual(businessesResponse);
-        expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
-          TrackingId: "mocked-uuid",
-          Identity: identity,
-          PageNumber: 1,
-          PageSize: 100,
-          SearchCriteria: searchCriteria,
-        });
+      expect(result).toEqual(businessesResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        PageNumber: 1,
+        PageSize: 100,
+        SearchCriteria: searchCriteria,
       });
+    });
 
-      test("should fetch businesses by store IDs", async () => {
-        axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+    test("should fetch businesses by store IDs", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
 
-        const searchCriteria: SearchCriteria = {
-          CriteriaType: "SearchByStoreIds",
-          StoreIds: ["Store_1", "Store_2"],
-        };
+      const searchCriteria: SearchCriteria = {
+        CriteriaType: "SearchByStoreIds",
+        StoreIds: ["Store_1", "Store_2"],
+      };
 
-        const result = await client.fetchBusinesses(1, 100, searchCriteria);
+      const result = await client.fetchBusinesses(1, 100, searchCriteria);
 
-        expect(result).toEqual(businessesResponse);
-        expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
-          TrackingId: "mocked-uuid",
-          Identity: identity,
-          PageNumber: 1,
-          PageSize: 100,
-          SearchCriteria: searchCriteria,
-        });
+      expect(result).toEqual(businessesResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        PageNumber: 1,
+        PageSize: 100,
+        SearchCriteria: searchCriteria,
       });
+    });
 
-      test("should fetch businesses by business name", async () => {
-        axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
+    test("should fetch businesses by business name", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: businessesResponse });
 
-        const searchCriteria: SearchCriteria = {
-          CriteriaType: "SearchByQuery",
-          BusinessName: "Contoso rentals",
-        };
+      const searchCriteria: SearchCriteria = {
+        CriteriaType: "SearchByQuery",
+        BusinessName: "Contoso rentals",
+      };
 
-        const result = await client.fetchBusinesses(1, 100, searchCriteria);
+      const result = await client.fetchBusinesses(1, 100, searchCriteria);
 
-        expect(result).toEqual(businessesResponse);
-        expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
-          TrackingId: "mocked-uuid",
-          Identity: identity,
-          PageNumber: 1,
-          PageSize: 100,
-          SearchCriteria: searchCriteria,
-        });
+      expect(result).toEqual(businessesResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        PageNumber: 1,
+        PageSize: 100,
+        SearchCriteria: searchCriteria,
       });
+    });
 
-      test("should throw error for invalid page number", async () => {
-        const searchCriteria: SearchCriteria = {
-          CriteriaType: "GetInBatches",
-        };
+    test("should throw error for invalid page number", async () => {
+      const searchCriteria: SearchCriteria = {
+        CriteriaType: "GetInBatches",
+      };
 
-        await expect(
-          client.fetchBusinesses(0, 100, searchCriteria)
-        ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
-      });
+      await expect(
+        client.fetchBusinesses(0, 100, searchCriteria)
+      ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
+    });
 
-      test("should throw error for invalid page size", async () => {
-        const searchCriteria: SearchCriteria = {
-          CriteriaType: "GetInBatches",
-        };
+    test("should throw error for invalid page size", async () => {
+      const searchCriteria: SearchCriteria = {
+        CriteriaType: "GetInBatches",
+      };
 
-        await expect(
-          client.fetchBusinesses(1, 0, searchCriteria)
-        ).rejects.toThrow("PageSize must be between 1 and 1000.");
+      await expect(
+        client.fetchBusinesses(1, 0, searchCriteria)
+      ).rejects.toThrow("PageSize must be between 1 and 1000.");
 
-        await expect(
-          client.fetchBusinesses(1, 1001, searchCriteria)
-        ).rejects.toThrow("PageSize must be between 1 and 1000.");
-      });
+      await expect(
+        client.fetchBusinesses(1, 1001, searchCriteria)
+      ).rejects.toThrow("PageSize must be between 1 and 1000.");
     });
   });
 
-  describe("update businesses", () => {
+  describe("fetch business status", () => {
     let client: BingPlacesClient;
     let identity: Identity;
     let axiosInstance: jest.Mocked<typeof axios>;
@@ -985,6 +984,154 @@ describe("BingPlacesClient", () => {
 
       await expect(
         client.fetchBusinessStatusInfo(1, 1001, criteriaType)
+      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+    });
+  });
+
+  describe("get analytics of business", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance;
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    const analyticsResponse: GetAnalyticsResponse = {
+      BusinessesAnalytics: [
+        {
+          StoreId: "750858",
+          BusinessStatisticsList: [
+            {
+              ImpressionCount: 29,
+              BusinessStatStartTime: "2015-11-30T00:00:00",
+            },
+            {
+              ImpressionCount: 18,
+              BusinessStatStartTime: "2015-12-07T00:00:00",
+            },
+            {
+              ImpressionCount: 15,
+              BusinessStatStartTime: "2015-12-14T00:00:00",
+            },
+            {
+              ImpressionCount: 20,
+              BusinessStatStartTime: "2015-12-21T00:00:00",
+            },
+            {
+              ImpressionCount: 29,
+              BusinessStatStartTime: "2015-12-28T00:00:00",
+            },
+            {
+              ImpressionCount: 47,
+              BusinessStatStartTime: "2016-01-04T00:00:00",
+            },
+            {
+              ImpressionCount: 39,
+              BusinessStatStartTime: "2016-01-11T00:00:00",
+            },
+            {
+              ImpressionCount: 39,
+              BusinessStatStartTime: "2016-01-18T00:00:00",
+            },
+            {
+              ImpressionCount: 39,
+              BusinessStatStartTime: "2016-01-25T00:00:00",
+            },
+            {
+              ImpressionCount: 27,
+              BusinessStatStartTime: "2016-02-01T00:00:00",
+            },
+            {
+              ImpressionCount: 32,
+              BusinessStatStartTime: "2016-02-08T00:00:00",
+            },
+            {
+              ImpressionCount: 28,
+              BusinessStatStartTime: "2016-02-15T00:00:00",
+            },
+          ],
+        },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    test("should fetch business analytics page-wise", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: analyticsResponse });
+
+      const criteriaType = "GetInBatches";
+
+      const result = await client.getAnalyticsForBusiness(1, 100, criteriaType);
+
+      expect(result).toEqual(analyticsResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/GetAnalytics", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        PageNumber: 1,
+        PageSize: 100,
+        CriteriaType: criteriaType,
+      });
+    });
+
+    test("should fetch business analytics by store IDs", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: analyticsResponse });
+
+      const criteriaType = "SearchByStoreIds";
+      const storeIds = ["Store_1", "Store_2"];
+
+      const result = await client.getAnalyticsForBusiness(
+        1,
+        100,
+        criteriaType,
+        storeIds
+      );
+
+      expect(result).toEqual(analyticsResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/GetAnalytics", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        PageNumber: 1,
+        PageSize: 100,
+        CriteriaType: criteriaType,
+        StoreIds: storeIds,
+      });
+    });
+
+    test("should throw error for invalid page number", async () => {
+      const criteriaType = "GetInBatches";
+
+      await expect(
+        client.getAnalyticsForBusiness(0, 100, criteriaType)
+      ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
+    });
+
+    test("should throw error for invalid page size", async () => {
+      const criteriaType = "GetInBatches";
+
+      await expect(
+        client.getAnalyticsForBusiness(1, 0, criteriaType)
+      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+
+      await expect(
+        client.getAnalyticsForBusiness(1, 1001, criteriaType)
       ).rejects.toThrow("PageSize must be between 1 and 1000.");
     });
   });

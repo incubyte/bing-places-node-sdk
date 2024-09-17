@@ -9,3 +9,5 @@ export { CreatedBusinessStatus } from "./created-business-status";
 export { SearchCriteria, SearchCriteriaType } from "./search-criteria";
 export { BusinessStatusInfo } from "./business-status-info";
 export { QualityIssue } from "./quality-issue";
+export { BusinessStatistics } from "./business-statistics";
+export { BusinessAnalytics } from "./business-analytics";

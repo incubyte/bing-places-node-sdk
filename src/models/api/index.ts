@@ -6,3 +6,5 @@ export { FetchBusinessesRequest } from "./fetch-businesses-request";
 export { FetchBusinessesResponse } from "./fetch-businesses-response";
 export { FetchBusinessStatusInfoRequest } from "./fetch-business-status-request";
 export { FetchBusinessStatusInfoResponse } from "./fetch-business-status-response";
+export { GetAnalyticsRequest } from "./get-analytics-request";
+export { GetAnalyticsResponse } from "./get-analytics-response";
