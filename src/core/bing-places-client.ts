@@ -109,6 +109,38 @@ export class BingPlacesClient {
     this.axiosInstance.defaults.baseURL = Constants.Endpoints.Production;
   }
 
+  private async postRequest<T, V>({
+    url,
+    data,
+    requestName,
+  }: {
+    url: string;
+    data: T;
+    requestName: string;
+  }): Promise<{ response: V; status: number }> {
+    try {
+      const response = await this.axiosInstance.post<V>(url, data);
+      return { response: response.data, status: response.status };
+    } catch (error) {
+      if (this.verbose) {
+        console.error(
+          `BingPlacesClient.postRequest: Failed to post request: ${requestName}.`,
+          error
+        );
+      }
+
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to post request: ${
+            error.response?.data?.ErrorMessage || error.message || requestName
+          }`
+        );
+      } else {
+        throw new Error(`Failed to post request: ${requestName}`);
+      }
+    }
+  }
+
   public async createBusinesses({
     businesses,
   }: {
