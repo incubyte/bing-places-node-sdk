@@ -9,6 +9,7 @@ import {
   FetchBusinessStatusInfoResponse,
   FetchBusinessesResponse,
   GetAnalyticsResponse,
+  DeleteBusinessesResponse,
 } from "../models/api";
 
 jest.mock("axios");
@@ -1133,6 +1134,94 @@ describe("BingPlacesClient", () => {
       await expect(
         client.getAnalyticsForBusiness(1, 1001, criteriaType)
       ).rejects.toThrow("PageSize must be between 1 and 1000.");
+    });
+  });
+
+  describe("delete businesses", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance;
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    const successfulResponse: DeleteBusinessesResponse = {
+      DeletedBusinesses: [
+        { StoreId: "Store_1", Status: "SUCCESSFUL" },
+        { StoreId: "Store_2", Status: "SUCCESSFUL" },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    const failedResponse: DeleteBusinessesResponse = {
+      DeletedBusinesses: [
+        {
+          StoreId: "Store_6",
+          Status: "FAILED",
+          ErrorMessage:
+            "Delete business failed since the store ID Store_6 does not exist in your account.",
+        },
+      ],
+      Errors: {},
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorMessage: null,
+      ErrorCode: 0,
+    };
+
+    test("should delete businesses successfully", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: successfulResponse });
+
+      const storeIds = ["Store_1", "Store_2"];
+
+      const result = await client.deleteBusinesses(storeIds);
+
+      expect(result).toEqual(successfulResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/DeleteBusinesses", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        StoreIds: storeIds,
+      });
+    });
+
+    test("should handle failed deletion due to non-existent store IDs", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: failedResponse });
+
+      const storeIds = ["Store_6"];
+
+      const result = await client.deleteBusinesses(storeIds);
+
+      expect(result).toEqual(failedResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/DeleteBusinesses", {
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+        StoreIds: storeIds,
+      });
+    });
+
+    test("should throw error for empty storeIds", async () => {
+      await expect(client.deleteBusinesses([])).rejects.toThrow(
+        "StoreIds must not be empty."
+      );
     });
   });
 });

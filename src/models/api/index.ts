@@ -8,3 +8,5 @@ export { FetchBusinessStatusInfoRequest } from "./fetch-business-status-request"
 export { FetchBusinessStatusInfoResponse } from "./fetch-business-status-response";
 export { GetAnalyticsRequest } from "./get-analytics-request";
 export { GetAnalyticsResponse } from "./get-analytics-response";
+export { DeleteBusinessesRequest } from "./delete-businesses-request";
+export { DeleteBusinessesResponse } from "./delete-businesses-response";

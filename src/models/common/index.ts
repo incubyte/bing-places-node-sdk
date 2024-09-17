@@ -11,3 +11,4 @@ export { BusinessStatusInfo } from "./business-status-info";
 export { QualityIssue } from "./quality-issue";
 export { BusinessStatistics } from "./business-statistics";
 export { BusinessAnalytics } from "./business-analytics";
+export { DeleteBusinessStatus } from "./delete-business-status";

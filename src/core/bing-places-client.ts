@@ -12,6 +12,8 @@ import {
   FetchBusinessStatusInfoResponse,
   GetAnalyticsRequest,
   GetAnalyticsResponse,
+  DeleteBusinessesRequest,
+  DeleteBusinessesResponse,
 } from "../models/api";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
@@ -252,6 +254,30 @@ export class BingPlacesClient {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to fetch business analytics: ${error}`);
+    }
+  }
+
+  public async deleteBusinesses(
+    storeIds: string[]
+  ): Promise<DeleteBusinessesResponse> {
+    if (storeIds.length === 0) {
+      throw new Error("StoreIds must not be empty.");
+    }
+
+    const requestBody: DeleteBusinessesRequest = {
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+      StoreIds: storeIds,
+    };
+
+    try {
+      const response = await this.axiosInstance.post<DeleteBusinessesResponse>(
+        "/DeleteBusinesses",
+        requestBody
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to delete businesses: ${error}`);
     }
   }
 }
