@@ -23,6 +23,7 @@ import { Constants } from "./constants";
 import { Utils } from "./utils";
 
 interface BingPlacesClientOptions {
+  verbose?: boolean;
   useSandbox?: boolean;
   identity: Identity;
 }
@@ -31,9 +32,12 @@ export class BingPlacesClient {
   private axiosInstance: AxiosInstance;
   private identity: Identity;
   private useSandbox: boolean;
+  private verbose: boolean;
 
   constructor(options: BingPlacesClientOptions) {
     options = options || { identity: null };
+
+    this.verbose = options.verbose == undefined ? false : options.verbose;
 
     if (
       !options.identity ||
