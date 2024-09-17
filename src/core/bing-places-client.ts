@@ -154,45 +154,26 @@ export class BingPlacesClient {
       Identity: this.identity,
     };
 
-    try {
-      const response = await this.axiosInstance.post<CreateBusinessesResponse>(
-        "/CreateBusinesses",
-        requestBody
-      );
-
-      return {
-        response: response.data,
-        status: response.status,
-      };
-    } catch (error) {
-      if (this.verbose) {
-        console.error(
-          "BigPlaces.createBusinesses: Failed to create businesses. ",
-          error
-        );
-      }
-
-      if (axios.isAxiosError(error)) {
-        throw new Error(
-          `Failed to create businesses: ${
-            error.response?.data?.ErrorMessage || error.message
-          }`
-        );
-      } else {
-        throw new Error(`Failed to create businesses`);
-      }
-    }
+    return this.postRequest<CreateBusinessesRequest, CreateBusinessesResponse>({
+      url: "/CreateBusinesses",
+      data: requestBody,
+      requestName: "CreateBusinesses",
+    });
   }
 
-  public async createSingleBusiness(
-    business: BusinessListing
-  ): Promise<{ response: CreateBusinessesResponse; status: number }> {
+  public async createSingleBusiness({
+    business,
+  }: {
+    business: BusinessListing;
+  }): Promise<{ response: CreateBusinessesResponse; status: number }> {
     return this.createBusinesses({ businesses: [business] });
   }
 
-  public async updateBusinesses(
-    businesses: BusinessListing[]
-  ): Promise<UpdateBusinessesResponse> {
+  public async updateBusinesses({
+    businesses,
+  }: {
+    businesses: BusinessListing[];
+  }): Promise<{ response: UpdateBusinessesResponse; status: number }> {
     if (
       !Array.isArray(businesses) ||
       businesses.length === 0 ||
@@ -209,25 +190,26 @@ export class BingPlacesClient {
       Identity: this.identity,
     };
 
-    try {
-      const response = await this.axiosInstance.post<UpdateBusinessesResponse>(
-        "/UpdateBusinesses",
-        requestBody
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(`Failed to update businesses: ${error}`);
-    }
+    return this.postRequest<UpdateBusinessesRequest, UpdateBusinessesResponse>({
+      url: "/UpdateBusinesses",
+      data: requestBody,
+      requestName: "UpdateBusinesses",
+    });
   }
 
-  public async fetchBusinesses(
-    pageNumber: number,
-    pageSize: number,
-    searchCriteria: FetchBusinessesRequest["SearchCriteria"]
-  ): Promise<FetchBusinessesResponse> {
+  public async fetchBusinesses({
+    pageNumber,
+    pageSize,
+    searchCriteria,
+  }: {
+    pageNumber: number;
+    pageSize: number;
+    searchCriteria: FetchBusinessesRequest["SearchCriteria"];
+  }): Promise<{ response: FetchBusinessesResponse; status: number }> {
     if (pageNumber < 1) {
       throw new Error("PageNumber must be greater than or equal to 1.");
     }
+
     if (pageSize < 1 || pageSize > 1000) {
       throw new Error("PageSize must be between 1 and 1000.");
     }
@@ -240,26 +222,27 @@ export class BingPlacesClient {
       SearchCriteria: searchCriteria,
     };
 
-    try {
-      const response = await this.axiosInstance.post<FetchBusinessesResponse>(
-        "/GetBusinesses",
-        requestBody
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(`Failed to fetch businesses: ${error}`);
-    }
+    return this.postRequest<FetchBusinessesRequest, FetchBusinessesResponse>({
+      url: "/GetBusinesses",
+      data: requestBody,
+      requestName: "FetchBusinesses",
+    });
   }
-
-  public async fetchBusinessStatusInfo(
-    pageNumber: number,
-    pageSize: number,
-    criteriaType: "GetInBatches" | "SearchByStoreIds",
-    storeIds?: string[]
-  ): Promise<FetchBusinessStatusInfoResponse> {
+  public async fetchBusinessStatusInfo({
+    pageNumber,
+    pageSize,
+    criteriaType,
+    storeIds,
+  }: {
+    pageNumber: number;
+    pageSize: number;
+    criteriaType: FetchBusinessStatusInfoRequest["CriteriaType"];
+    storeIds?: string[];
+  }): Promise<{ response: FetchBusinessStatusInfoResponse; status: number }> {
     if (pageNumber < 1) {
       throw new Error("PageNumber must be greater than or equal to 1.");
     }
+
     if (pageSize < 1 || pageSize > 1000) {
       throw new Error("PageSize must be between 1 and 1000.");
     }
@@ -273,24 +256,27 @@ export class BingPlacesClient {
       StoreIds: storeIds,
     };
 
-    try {
-      const response =
-        await this.axiosInstance.post<FetchBusinessStatusInfoResponse>(
-          "/GetBusinessStatusInfo",
-          requestBody
-        );
-      return response.data;
-    } catch (error) {
-      throw new Error(`Failed to fetch business status info: ${error}`);
-    }
+    return this.postRequest<
+      FetchBusinessStatusInfoRequest,
+      FetchBusinessStatusInfoResponse
+    >({
+      url: "/GetBusinessStatusInfo",
+      data: requestBody,
+      requestName: "FetchBusinessStatusInfo",
+    });
   }
 
-  public async getAnalyticsForBusiness(
-    pageNumber: number,
-    pageSize: number,
-    criteriaType: "GetInBatches" | "SearchByStoreIds",
-    storeIds?: string[]
-  ): Promise<GetAnalyticsResponse> {
+  public async getAnalyticsForBusiness({
+    pageNumber,
+    pageSize,
+    criteriaType,
+    storeIds,
+  }: {
+    pageNumber: number;
+    pageSize: number;
+    criteriaType: GetAnalyticsRequest["CriteriaType"];
+    storeIds?: string[];
+  }): Promise<{ response: GetAnalyticsResponse; status: number }> {
     if (pageNumber < 1) {
       throw new Error("PageNumber must be greater than or equal to 1.");
     }
@@ -307,20 +293,18 @@ export class BingPlacesClient {
       StoreIds: storeIds,
     };
 
-    try {
-      const response = await this.axiosInstance.post<GetAnalyticsResponse>(
-        "/GetAnalytics",
-        requestBody
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(`Failed to fetch business analytics: ${error}`);
-    }
+    return this.postRequest<GetAnalyticsRequest, GetAnalyticsResponse>({
+      url: "/GetAnalytics",
+      data: requestBody,
+      requestName: "GetAnalyticsForBusiness",
+    });
   }
 
-  public async deleteBusinesses(
-    storeIds: string[]
-  ): Promise<DeleteBusinessesResponse> {
+  public async deleteBusinesses({
+    storeIds,
+  }: {
+    storeIds: string[];
+  }): Promise<{ response: DeleteBusinessesResponse; status: number }> {
     if (storeIds.length === 0) {
       throw new Error("StoreIds must not be empty.");
     }
@@ -331,20 +315,18 @@ export class BingPlacesClient {
       StoreIds: storeIds,
     };
 
-    try {
-      const response = await this.axiosInstance.post<DeleteBusinessesResponse>(
-        "/DeleteBusinesses",
-        requestBody
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(`Failed to delete businesses: ${error}`);
-    }
+    return this.postRequest<DeleteBusinessesRequest, DeleteBusinessesResponse>({
+      url: "/DeleteBusinesses",
+      data: requestBody,
+      requestName: "DeleteBusinesses",
+    });
   }
 
-  public async createChain(
-    chainInfo: ChainInfo
-  ): Promise<CreateBulkChainResponse> {
+  public async createChain({
+    chainInfo,
+  }: {
+    chainInfo: ChainInfo;
+  }): Promise<{ response: CreateBulkChainResponse; status: number }> {
     if (chainInfo.Locations < 10) {
       throw new Error("Chain must have at least 10 locations.");
     }
@@ -355,21 +337,18 @@ export class BingPlacesClient {
       Identity: this.identity,
     };
 
-    try {
-      const response = await this.axiosInstance.post<CreateBulkChainResponse>(
-        "/CreateBulkChain",
-        requestBody
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to create chain: ", error);
-      throw new Error(`Failed to create chain`);
-    }
+    return this.postRequest<CreateBulkChainRequest, CreateBulkChainResponse>({
+      url: "/CreateBulkChain",
+      data: requestBody,
+      requestName: "CreateChain",
+    });
   }
 
-  public async updateChain(
-    chainInfo: ChainInfo
-  ): Promise<UpdateBulkChainInfoResponse> {
+  public async updateChain({
+    chainInfo,
+  }: {
+    chainInfo: ChainInfo;
+  }): Promise<{ response: UpdateBulkChainInfoResponse; status: number }> {
     if (chainInfo.Locations < 10) {
       throw new Error("Chain must have at least 10 locations.");
     }
@@ -380,16 +359,13 @@ export class BingPlacesClient {
       Identity: this.identity,
     };
 
-    try {
-      const response =
-        await this.axiosInstance.post<UpdateBulkChainInfoResponse>(
-          "/UpdateBulkChainInfo",
-          requestBody
-        );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to update chain: ", error);
-      throw new Error(`Failed to update chain`);
-    }
+    return this.postRequest<
+      UpdateBulkChainInfoRequest,
+      UpdateBulkChainInfoResponse
+    >({
+      url: "/UpdateBulkChainInfo",
+      data: requestBody,
+      requestName: "UpdateChain",
+    });
   }
 }

@@ -2,7 +2,12 @@ import { BingPlacesClient } from "../core/bing-places-client";
 import { Constants } from "../core/constants";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { Identity, BusinessListing, SearchCriteria } from "../models/common"; // Adjust the import based on your actual file structure
+import {
+  Identity,
+  BusinessListing,
+  SearchCriteria,
+  SearchCriteriaType,
+} from "../models/common"; // Adjust the import based on your actual file structure
 import {
   CreateBusinessesResponse,
   UpdateBusinessesResponse,
@@ -368,7 +373,7 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.createSingleBusiness(business);
+      const result = await client.createSingleBusiness({ business: business });
 
       expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBusinesses", {
@@ -477,9 +482,9 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.updateBusinesses(businesses);
+      const result = await client.updateBusinesses({ businesses });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBusinesses", {
         Businesses: businesses,
         TrackingId: "mocked-uuid",
@@ -508,33 +513,35 @@ describe("BingPlacesClient", () => {
 
       axiosInstance.post.mockResolvedValueOnce({ data: response });
 
-      const result = await client.updateBusinesses([
-        {
-          StoreId: "Store_60",
-          BusinessName: "Non-existent Business",
-          AddressLine1: "Address Line",
-          AddressLine2: "",
-          City: "City",
-          Country: "US",
-          ZipCode: "98012",
-          StateOrProvince: "WA",
-          PhoneNumber: "(323) 123-4567",
-          Categories: {
-            BusinessCategories: [
-              {
+      const result = await client.updateBusinesses({
+        businesses: [
+          {
+            StoreId: "Store_60",
+            BusinessName: "Non-existent Business",
+            AddressLine1: "Address Line",
+            AddressLine2: "",
+            City: "City",
+            Country: "US",
+            ZipCode: "98012",
+            StateOrProvince: "WA",
+            PhoneNumber: "(323) 123-4567",
+            Categories: {
+              BusinessCategories: [
+                {
+                  CategoryName: "Restaurants",
+                  BPCategoryId: 700341,
+                },
+              ],
+              PrimaryCategory: {
                 CategoryName: "Restaurants",
                 BPCategoryId: 700341,
               },
-            ],
-            PrimaryCategory: {
-              CategoryName: "Restaurants",
-              BPCategoryId: 700341,
             },
           },
-        },
-      ]);
+        ],
+      });
 
-      expect(result).toEqual(response);
+      expect(result.response).toEqual(response);
       expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBusinesses", {
         Businesses: [
           {
@@ -567,12 +574,14 @@ describe("BingPlacesClient", () => {
     });
 
     test("should throw error for invalid number of businesses", async () => {
-      await expect(client.updateBusinesses([])).rejects.toThrow(
+      await expect(client.updateBusinesses({ businesses: [] })).rejects.toThrow(
         "Businesses array must contain between 1 and 1000 items."
       );
 
       const tooManyBusinesses = new Array(1001).fill(businesses[0]);
-      await expect(client.updateBusinesses(tooManyBusinesses)).rejects.toThrow(
+      await expect(
+        client.updateBusinesses({ businesses: tooManyBusinesses })
+      ).rejects.toThrow(
         "Businesses array must contain between 1 and 1000 items."
       );
     });
@@ -702,9 +711,13 @@ describe("BingPlacesClient", () => {
         CriteriaType: "GetInBatches",
       };
 
-      const result = await client.fetchBusinesses(1, 100, searchCriteria);
+      const result = await client.fetchBusinesses({
+        pageNumber: 1,
+        pageSize: 100,
+        searchCriteria,
+      });
 
-      expect(result).toEqual(businessesResponse);
+      expect(result.response).toEqual(businessesResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -722,9 +735,13 @@ describe("BingPlacesClient", () => {
         StoreIds: ["Store_1", "Store_2"],
       };
 
-      const result = await client.fetchBusinesses(1, 100, searchCriteria);
+      const result = await client.fetchBusinesses({
+        pageNumber: 1,
+        pageSize: 100,
+        searchCriteria,
+      });
 
-      expect(result).toEqual(businessesResponse);
+      expect(result.response).toEqual(businessesResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -742,9 +759,13 @@ describe("BingPlacesClient", () => {
         BusinessName: "Contoso rentals",
       };
 
-      const result = await client.fetchBusinesses(1, 100, searchCriteria);
+      const result = await client.fetchBusinesses({
+        pageNumber: 1,
+        pageSize: 100,
+        searchCriteria,
+      });
 
-      expect(result).toEqual(businessesResponse);
+      expect(result.response).toEqual(businessesResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/GetBusinesses", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -760,7 +781,7 @@ describe("BingPlacesClient", () => {
       };
 
       await expect(
-        client.fetchBusinesses(0, 100, searchCriteria)
+        client.fetchBusinesses({ pageNumber: 0, pageSize: 100, searchCriteria })
       ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
     });
 
@@ -770,11 +791,15 @@ describe("BingPlacesClient", () => {
       };
 
       await expect(
-        client.fetchBusinesses(1, 0, searchCriteria)
+        client.fetchBusinesses({ pageNumber: 1, pageSize: 0, searchCriteria })
       ).rejects.toThrow("PageSize must be between 1 and 1000.");
 
       await expect(
-        client.fetchBusinesses(1, 1001, searchCriteria)
+        client.fetchBusinesses({
+          pageNumber: 1,
+          pageSize: 1001,
+          searchCriteria,
+        })
       ).rejects.toThrow("PageSize must be between 1 and 1000.");
     });
   });
@@ -895,11 +920,17 @@ describe("BingPlacesClient", () => {
         data: businessStatusInfoResponse1,
       });
 
-      const criteriaType = "GetInBatches";
+      const criteriaType = "GetInBatches" as SearchCriteriaType;
 
-      const result = await client.fetchBusinessStatusInfo(1, 100, criteriaType);
+      const params = {
+        pageNumber: 1,
+        pageSize: 100,
+        criteriaType,
+      };
 
-      expect(result).toEqual(businessStatusInfoResponse1);
+      const result = await client.fetchBusinessStatusInfo(params);
+
+      expect(result.response).toEqual(businessStatusInfoResponse1);
       expect(axiosInstance.post).toHaveBeenCalledWith(
         "/GetBusinessStatusInfo",
         {
@@ -917,17 +948,19 @@ describe("BingPlacesClient", () => {
         data: businessStatusInfoResponse2,
       });
 
-      const criteriaType = "SearchByStoreIds";
+      const criteriaType = "SearchByStoreIds" as SearchCriteriaType;
       const storeIds = ["Store_1", "Store_2"];
 
-      const result = await client.fetchBusinessStatusInfo(
-        1,
-        100,
+      const params = {
+        pageNumber: 1,
+        pageSize: 100,
         criteriaType,
-        storeIds
-      );
+        storeIds,
+      };
 
-      expect(result).toEqual(businessStatusInfoResponse2);
+      const result = await client.fetchBusinessStatusInfo(params);
+
+      expect(result.response).toEqual(businessStatusInfoResponse2);
       expect(axiosInstance.post).toHaveBeenCalledWith(
         "/GetBusinessStatusInfo",
         {
@@ -946,17 +979,19 @@ describe("BingPlacesClient", () => {
         data: businessStatusInfoResponse3,
       });
 
-      const criteriaType = "SearchByStoreIds";
+      const criteriaType = "SearchByStoreIds" as SearchCriteriaType;
       const storeIds = ["Store_1"];
 
-      const result = await client.fetchBusinessStatusInfo(
-        1,
-        100,
+      const params = {
+        pageNumber: 1,
+        pageSize: 100,
         criteriaType,
-        storeIds
-      );
+        storeIds,
+      };
 
-      expect(result).toEqual(businessStatusInfoResponse3);
+      const result = await client.fetchBusinessStatusInfo(params);
+
+      expect(result.response).toEqual(businessStatusInfoResponse3);
       expect(axiosInstance.post).toHaveBeenCalledWith(
         "/GetBusinessStatusInfo",
         {
@@ -971,23 +1006,35 @@ describe("BingPlacesClient", () => {
     });
 
     test("should throw error for invalid page number", async () => {
-      const criteriaType = "GetInBatches";
+      const criteriaType = "GetInBatches" as SearchCriteriaType;
 
-      await expect(
-        client.fetchBusinessStatusInfo(0, 100, criteriaType)
-      ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
+      const params = {
+        pageNumber: 0,
+        pageSize: 100,
+        criteriaType,
+      };
+
+      await expect(client.fetchBusinessStatusInfo(params)).rejects.toThrow(
+        "PageNumber must be greater than or equal to 1."
+      );
     });
 
     test("should throw error for invalid page size", async () => {
-      const criteriaType = "GetInBatches";
+      const criteriaType = "GetInBatches" as SearchCriteriaType;
 
-      await expect(
-        client.fetchBusinessStatusInfo(1, 0, criteriaType)
-      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+      const params = {
+        pageNumber: 1,
+        pageSize: 0,
+        criteriaType,
+      };
 
-      await expect(
-        client.fetchBusinessStatusInfo(1, 1001, criteriaType)
-      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+      await expect(client.fetchBusinessStatusInfo(params)).rejects.toThrow(
+        "PageSize must be between 1 and 1000."
+      );
+
+      await expect(client.fetchBusinessStatusInfo(params)).rejects.toThrow(
+        "PageSize must be between 1 and 1000."
+      );
     });
   });
 
@@ -1080,11 +1127,17 @@ describe("BingPlacesClient", () => {
     test("should fetch business analytics page-wise", async () => {
       axiosInstance.post.mockResolvedValueOnce({ data: analyticsResponse });
 
-      const criteriaType = "GetInBatches";
+      const criteriaType = "GetInBatches" as SearchCriteriaType;
 
-      const result = await client.getAnalyticsForBusiness(1, 100, criteriaType);
+      const params = {
+        pageNumber: 1,
+        pageSize: 100,
+        criteriaType,
+      };
 
-      expect(result).toEqual(analyticsResponse);
+      const result = await client.getAnalyticsForBusiness(params);
+
+      expect(result.response).toEqual(analyticsResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/GetAnalytics", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -1097,17 +1150,19 @@ describe("BingPlacesClient", () => {
     test("should fetch business analytics by store IDs", async () => {
       axiosInstance.post.mockResolvedValueOnce({ data: analyticsResponse });
 
-      const criteriaType = "SearchByStoreIds";
+      const criteriaType = "SearchByStoreIds" as SearchCriteriaType;
       const storeIds = ["Store_1", "Store_2"];
 
-      const result = await client.getAnalyticsForBusiness(
-        1,
-        100,
+      const params = {
+        pageNumber: 1,
+        pageSize: 100,
         criteriaType,
-        storeIds
-      );
+        storeIds,
+      };
 
-      expect(result).toEqual(analyticsResponse);
+      const result = await client.getAnalyticsForBusiness(params);
+
+      expect(result.response).toEqual(analyticsResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/GetAnalytics", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -1119,23 +1174,41 @@ describe("BingPlacesClient", () => {
     });
 
     test("should throw error for invalid page number", async () => {
-      const criteriaType = "GetInBatches";
+      const criteriaType = "GetInBatches" as SearchCriteriaType;
 
-      await expect(
-        client.getAnalyticsForBusiness(0, 100, criteriaType)
-      ).rejects.toThrow("PageNumber must be greater than or equal to 1.");
+      const params = {
+        pageNumber: 0,
+        pageSize: 100,
+        criteriaType,
+      };
+
+      await expect(client.getAnalyticsForBusiness(params)).rejects.toThrow(
+        "PageNumber must be greater than or equal to 1."
+      );
     });
 
     test("should throw error for invalid page size", async () => {
-      const criteriaType = "GetInBatches";
+      const criteriaType = "GetInBatches" as SearchCriteriaType;
 
-      await expect(
-        client.getAnalyticsForBusiness(1, 0, criteriaType)
-      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+      const params = {
+        pageNumber: 1,
+        pageSize: 0,
+        criteriaType,
+      };
 
-      await expect(
-        client.getAnalyticsForBusiness(1, 1001, criteriaType)
-      ).rejects.toThrow("PageSize must be between 1 and 1000.");
+      await expect(client.getAnalyticsForBusiness(params)).rejects.toThrow(
+        "PageSize must be between 1 and 1000."
+      );
+
+      const params2 = {
+        pageNumber: 1,
+        pageSize: 1001,
+        criteriaType,
+      };
+
+      await expect(client.getAnalyticsForBusiness(params2)).rejects.toThrow(
+        "PageSize must be between 1 and 1000."
+      );
     });
   });
 
@@ -1195,9 +1268,9 @@ describe("BingPlacesClient", () => {
 
       const storeIds = ["Store_1", "Store_2"];
 
-      const result = await client.deleteBusinesses(storeIds);
+      const result = await client.deleteBusinesses({ storeIds });
 
-      expect(result).toEqual(successfulResponse);
+      expect(result.response).toEqual(successfulResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/DeleteBusinesses", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -1210,9 +1283,9 @@ describe("BingPlacesClient", () => {
 
       const storeIds = ["Store_6"];
 
-      const result = await client.deleteBusinesses(storeIds);
+      const result = await client.deleteBusinesses({ storeIds });
 
-      expect(result).toEqual(failedResponse);
+      expect(result.response).toEqual(failedResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/DeleteBusinesses", {
         TrackingId: "mocked-uuid",
         Identity: identity,
@@ -1221,7 +1294,7 @@ describe("BingPlacesClient", () => {
     });
 
     test("should throw error for empty storeIds", async () => {
-      await expect(client.deleteBusinesses([])).rejects.toThrow(
+      await expect(client.deleteBusinesses({ storeIds: [] })).rejects.toThrow(
         "StoreIds must not be empty."
       );
     });
@@ -1285,9 +1358,9 @@ describe("BingPlacesClient", () => {
       test("should create chain successfully", async () => {
         axiosInstance.post.mockResolvedValueOnce({ data: successfulResponse });
 
-        const result = await client.createChain(chainInfo);
+        const result = await client.createChain({ chainInfo });
 
-        expect(result).toEqual(successfulResponse);
+        expect(result.response).toEqual(successfulResponse);
         expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBulkChain", {
           ChainInfo: chainInfo,
           TrackingId: "mocked-uuid",
@@ -1298,9 +1371,9 @@ describe("BingPlacesClient", () => {
       test("should handle failed creation due to existing chain name", async () => {
         axiosInstance.post.mockResolvedValueOnce({ data: failedResponse });
 
-        const result = await client.createChain(chainInfo);
+        const result = await client.createChain({ chainInfo });
 
-        expect(result).toEqual(failedResponse);
+        expect(result.response).toEqual(failedResponse);
         expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBulkChain", {
           ChainInfo: chainInfo,
           TrackingId: "mocked-uuid",
@@ -1315,7 +1388,9 @@ describe("BingPlacesClient", () => {
 
         const invalidChainInfo = { ...chainInfo, Website: "" };
 
-        await expect(client.createChain(invalidChainInfo)).rejects.toThrow();
+        await expect(
+          client.createChain({ chainInfo: invalidChainInfo })
+        ).rejects.toThrow();
 
         expect(axiosInstance.post).toHaveBeenCalledWith("/CreateBulkChain", {
           ChainInfo: invalidChainInfo,
@@ -1327,9 +1402,9 @@ describe("BingPlacesClient", () => {
       test("should throw error for less than 10 locations", async () => {
         const invalidChainInfo = { ...chainInfo, Locations: 5 };
 
-        await expect(client.createChain(invalidChainInfo)).rejects.toThrow(
-          "Chain must have at least 10 locations."
-        );
+        await expect(
+          client.createChain({ chainInfo: invalidChainInfo })
+        ).rejects.toThrow("Chain must have at least 10 locations.");
       });
     });
   });
@@ -1392,9 +1467,9 @@ describe("BingPlacesClient", () => {
     test("should update chain successfully", async () => {
       axiosInstance.post.mockResolvedValueOnce({ data: successfulResponse });
 
-      const result = await client.updateChain(chainInfo);
+      const result = await client.updateChain({ chainInfo });
 
-      expect(result).toEqual(successfulResponse);
+      expect(result.response).toEqual(successfulResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBulkChainInfo", {
         ChainInfo: chainInfo,
         TrackingId: "mocked-uuid",
@@ -1405,9 +1480,9 @@ describe("BingPlacesClient", () => {
     test("should handle failed update due to non-existent chain name", async () => {
       axiosInstance.post.mockResolvedValueOnce({ data: failedResponse });
 
-      const result = await client.updateChain(chainInfo);
+      const result = await client.updateChain({ chainInfo });
 
-      expect(result).toEqual(failedResponse);
+      expect(result.response).toEqual(failedResponse);
       expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBulkChainInfo", {
         ChainInfo: chainInfo,
         TrackingId: "mocked-uuid",
@@ -1422,9 +1497,9 @@ describe("BingPlacesClient", () => {
 
       const invalidChainInfo = { ...chainInfo, Website: "" };
 
-      await expect(client.updateChain(invalidChainInfo)).rejects.toThrow(
-        "Failed to update chain"
-      );
+      await expect(
+        client.updateChain({ chainInfo: invalidChainInfo })
+      ).rejects.toThrow("Failed to post request: UpdateChain");
       expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBulkChainInfo", {
         ChainInfo: invalidChainInfo,
         TrackingId: "mocked-uuid",
@@ -1435,9 +1510,9 @@ describe("BingPlacesClient", () => {
     test("should throw error for less than 10 locations", async () => {
       const invalidChainInfo = { ...chainInfo, Locations: 5 };
 
-      await expect(client.updateChain(invalidChainInfo)).rejects.toThrow(
-        "Chain must have at least 10 locations."
-      );
+      await expect(
+        client.updateChain({ chainInfo: invalidChainInfo })
+      ).rejects.toThrow("Chain must have at least 10 locations.");
     });
   });
 });
