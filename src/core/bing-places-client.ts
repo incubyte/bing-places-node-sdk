@@ -22,12 +22,13 @@ import {
 import { Constants } from "./constants";
 import { Utils } from "./utils";
 
-interface BingPlacesClientOptions {
+export interface BingPlacesClientOptions {
   verbose?: boolean;
   useSandbox?: boolean;
   identity: Identity;
 }
 
+// TODO: method names should exactly mimic API endpoints for better readability
 export class BingPlacesClient {
   private axiosInstance: AxiosInstance;
   private identity: Identity;
