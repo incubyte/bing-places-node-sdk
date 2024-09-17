@@ -7,7 +7,7 @@ import {
   BusinessListing,
   SearchCriteria,
   SearchCriteriaType,
-} from "../models/common"; // Adjust the import based on your actual file structure
+} from "../models/common";
 import {
   CreateBusinessesResponse,
   UpdateBusinessesResponse,
@@ -45,9 +45,8 @@ describe("BingPlacesClient", () => {
     });
 
     test("should warn if useSandbox is not a boolean", () => {
-      const useSandbox: any = "not a boolean"; // Example of an invalid value
+      const useSandbox: any = "not a boolean";
 
-      // Assuming BingPlacesClient is a class and the code is inside a method
       const client = new BingPlacesClient({
         identity: {
           Puid: "test",
@@ -63,7 +62,7 @@ describe("BingPlacesClient", () => {
     });
 
     test("should not warn if useSandbox is a boolean", () => {
-      const useSandbox: boolean = true; // Example of a valid value
+      const useSandbox: boolean = true;
 
       const client = new BingPlacesClient({
         identity: {
@@ -99,8 +98,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ useSandbox: true, identity }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ useSandbox: true, identity });
 
       client["axiosInstance"] = axios as jest.Mocked<typeof axios>;
       (client["axiosInstance"] as any).defaults = {
@@ -167,8 +166,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
@@ -443,8 +442,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
@@ -597,8 +596,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance; // Ensure axiosInstance is properly initialized
       (client["axiosInstance"] as any).defaults = {
@@ -902,8 +901,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
@@ -1048,8 +1047,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
@@ -1222,8 +1221,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
@@ -1310,8 +1309,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
@@ -1419,8 +1418,8 @@ describe("BingPlacesClient", () => {
         Puid: "test",
         AuthProvider: "test",
         EmailId: "test@gmail.com",
-      }; // Example identity object
-      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      };
+      client = new BingPlacesClient({ identity, useSandbox: true });
       axiosInstance = axios as jest.Mocked<typeof axios>;
       client["axiosInstance"] = axiosInstance;
       (client["axiosInstance"] as any).defaults = {
