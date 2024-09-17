@@ -17,7 +17,7 @@ A clean, re-usable Node (TypeScript) SDK for Bing Places API. You can think of t
 
 ## Features
 
-- Configurable retries.
+- Configurable retries. (TODO)
 - Additional endpoints for specific business use-cases (like 'closeBusinesses'). [needs scoping]
 - Monitoring (metrics: like rate limits) [needs scoping]
 - Easy integration with existing Node.js applications.
