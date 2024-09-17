@@ -11,6 +11,7 @@ import {
   GetAnalyticsResponse,
   DeleteBusinessesResponse,
   CreateBulkChainResponse,
+  UpdateBulkChainInfoResponse,
 } from "../models/api";
 
 jest.mock("axios");
@@ -1330,6 +1331,113 @@ describe("BingPlacesClient", () => {
           "Chain must have at least 10 locations."
         );
       });
+    });
+  });
+
+  describe("update bulk chain", () => {
+    let client: BingPlacesClient;
+    let identity: Identity;
+    let axiosInstance: jest.Mocked<typeof axios>;
+
+    beforeEach(() => {
+      identity = {
+        Puid: "test",
+        AuthProvider: "test",
+        EmailId: "test@gmail.com",
+      }; // Example identity object
+      client = new BingPlacesClient({ identity, useSandbox: true }); // Assuming constructor takes identity and useSandbox
+      axiosInstance = axios as jest.Mocked<typeof axios>;
+      client["axiosInstance"] = axiosInstance;
+      (client["axiosInstance"] as any).defaults = {
+        baseURL: "",
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    const chainInfo = {
+      ChainName: "chain name",
+      Website: "www.contoso.com",
+      Locations: 100,
+      ClientContactName: "contactName2",
+      ClientCorporateEmail: "sample2@contoso.com",
+    };
+
+    const successfulResponse: UpdateBulkChainInfoResponse = {
+      Operation: "CHAIN_UPDATE",
+      ErrorMessage: "",
+      TrackingId: "mocked-uuid",
+      OperationStatus: true,
+      ErrorCode: 0,
+    };
+
+    const failedResponse: UpdateBulkChainInfoResponse = {
+      Operation: "CHAIN_UPDATE",
+      ErrorMessage:
+        "UpdateBulkChainInfo failed since chain name does not exist",
+      TrackingId: "mocked-uuid",
+      OperationStatus: false,
+      ErrorCode: 0,
+    };
+
+    const invalidRequestResponse = {
+      Message: "The request is invalid.",
+      ModelState: {
+        "request.ChainInfo.Website": ["You can't leave Website empty."],
+      },
+    };
+
+    test("should update chain successfully", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: successfulResponse });
+
+      const result = await client.updateChain(chainInfo);
+
+      expect(result).toEqual(successfulResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBulkChainInfo", {
+        ChainInfo: chainInfo,
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+      });
+    });
+
+    test("should handle failed update due to non-existent chain name", async () => {
+      axiosInstance.post.mockResolvedValueOnce({ data: failedResponse });
+
+      const result = await client.updateChain(chainInfo);
+
+      expect(result).toEqual(failedResponse);
+      expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBulkChainInfo", {
+        ChainInfo: chainInfo,
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+      });
+    });
+
+    test("should handle invalid request due to missing website", async () => {
+      axiosInstance.post.mockRejectedValueOnce({
+        response: { data: invalidRequestResponse },
+      });
+
+      const invalidChainInfo = { ...chainInfo, Website: "" };
+
+      await expect(client.updateChain(invalidChainInfo)).rejects.toThrow(
+        "Failed to update chain"
+      );
+      expect(axiosInstance.post).toHaveBeenCalledWith("/UpdateBulkChainInfo", {
+        ChainInfo: invalidChainInfo,
+        TrackingId: "mocked-uuid",
+        Identity: identity,
+      });
+    });
+
+    test("should throw error for less than 10 locations", async () => {
+      const invalidChainInfo = { ...chainInfo, Locations: 5 };
+
+      await expect(client.updateChain(invalidChainInfo)).rejects.toThrow(
+        "Chain must have at least 10 locations."
+      );
     });
   });
 });

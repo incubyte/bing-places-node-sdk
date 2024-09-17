@@ -12,3 +12,5 @@ export { DeleteBusinessesRequest } from "./delete-businesses-request";
 export { DeleteBusinessesResponse } from "./delete-businesses-response";
 export { CreateBulkChainRequest } from "./create-bulk-chain-request";
 export { CreateBulkChainResponse } from "./create-bulk-chain-response";
+export { UpdateBulkChainInfoRequest } from "./update-bulk-chain-request";
+export { UpdateBulkChainInfoResponse } from "./update-bulk-chain-response";

@@ -16,6 +16,8 @@ import {
   DeleteBusinessesResponse,
   CreateBulkChainRequest,
   CreateBulkChainResponse,
+  UpdateBulkChainInfoRequest,
+  UpdateBulkChainInfoResponse,
 } from "../models/api";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
@@ -305,6 +307,32 @@ export class BingPlacesClient {
     } catch (error) {
       console.error("Failed to create chain: ", error);
       throw new Error(`Failed to create chain`);
+    }
+  }
+
+  public async updateChain(
+    chainInfo: ChainInfo
+  ): Promise<UpdateBulkChainInfoResponse> {
+    if (chainInfo.Locations < 10) {
+      throw new Error("Chain must have at least 10 locations.");
+    }
+
+    const requestBody: UpdateBulkChainInfoRequest = {
+      ChainInfo: chainInfo,
+      TrackingId: uuidv4(), // Generate a new GUID for each request
+      Identity: this.identity,
+    };
+
+    try {
+      const response =
+        await this.axiosInstance.post<UpdateBulkChainInfoResponse>(
+          "/UpdateBulkChainInfo",
+          requestBody
+        );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update chain: ", error);
+      throw new Error(`Failed to update chain`);
     }
   }
 }
