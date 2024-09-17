@@ -1,4 +1,4 @@
-import { BusinessListing } from "./business-listing";
+import { BusinessListing } from "../common/business-listing";
 
 export interface FetchBusinessesResponse {
   Businesses: BusinessListing[];

@@ -1,5 +1,5 @@
-import { Identity } from "./identity";
-import { SearchCriteriaType } from "./search-criteria";
+import { Identity } from "../common/identity";
+import { SearchCriteriaType } from "../common/search-criteria";
 
 export interface FetchBusinessStatusInfoRequest {
   TrackingId: string;

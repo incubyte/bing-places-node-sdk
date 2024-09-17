@@ -2,15 +2,13 @@ import { BingPlacesClient } from "../core/bing-places-client";
 import { Constants } from "../core/constants";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { Identity, BusinessListing, SearchCriteria } from "../models/common"; // Adjust the import based on your actual file structure
 import {
-  Identity,
-  BusinessListing,
   CreateBusinessesResponse,
   UpdateBusinessesResponse,
-  FetchBusinessesResponse,
-  SearchCriteria,
   FetchBusinessStatusInfoResponse,
-} from "../models"; // Adjust the import based on your actual file structure
+  FetchBusinessesResponse,
+} from "../models/api";
 
 jest.mock("axios");
 jest.mock("uuid", () => ({

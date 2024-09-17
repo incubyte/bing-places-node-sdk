@@ -1,17 +1,16 @@
 import axios, { AxiosInstance } from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { BusinessListing, Identity } from "../models/common";
 import {
-  BusinessListing,
+  UpdateBusinessesRequest,
+  UpdateBusinessesResponse,
   CreateBusinessesRequest,
   CreateBusinessesResponse,
   FetchBusinessesRequest,
   FetchBusinessesResponse,
   FetchBusinessStatusInfoRequest,
   FetchBusinessStatusInfoResponse,
-  Identity,
-  UpdateBusinessesRequest,
-  UpdateBusinessesResponse,
-} from "../models";
+} from "../models/api";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
 

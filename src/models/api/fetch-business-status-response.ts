@@ -1,4 +1,4 @@
-import { BusinessStatusInfo } from "./business-status-info";
+import { BusinessStatusInfo } from "../common/business-status-info";
 
 export interface FetchBusinessStatusInfoResponse {
   BusinessesStatusInfo: BusinessStatusInfo[];

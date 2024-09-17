@@ -1,5 +1,5 @@
-import { CreatedBusinessStatus } from "./created-business-status";
-import { ValidationError } from "./validation-error";
+import { CreatedBusinessStatus } from "../common/created-business-status";
+import { ValidationError } from "../common/validation-error";
 
 export interface CreateBusinessesResponse {
   Errors?: { [key: string]: ValidationError }; // this field holds only the validation errors
